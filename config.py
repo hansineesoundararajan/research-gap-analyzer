@@ -1,0 +1,2 @@
+NUM_PAPERS = 3
+OPENAI_MODEL = "gpt-4o-mini"
