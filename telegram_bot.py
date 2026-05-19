@@ -204,7 +204,8 @@ def main() -> None:
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     logger.info("Research Gap Analyzer Bot started")
-    webhook_settings = get_webhook_settings()
+    telegram_mode = os.getenv("TELEGRAM_MODE", "polling").strip().lower()
+    webhook_settings = get_webhook_settings() if telegram_mode == "webhook" else None
     if webhook_settings:
         port, url_path, webhook_url = webhook_settings
         logger.info("Running Telegram webhook on %s", webhook_url)
@@ -216,6 +217,7 @@ def main() -> None:
             allowed_updates=Update.ALL_TYPES,
         )
     else:
+        logger.info("Running Telegram polling mode")
         start_health_server_if_needed()
         app.run_polling(allowed_updates=Update.ALL_TYPES)
 

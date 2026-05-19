@@ -77,7 +77,7 @@ sudo journalctl -u research-gap-bot.service -f
 
 ## Render Free Deployment
 
-Render Free Web Services are useful for demos, but they are not true 24/7 hosting. Render spins down a free web service after 15 minutes without inbound HTTP or WebSocket traffic. On Render, this bot runs in Telegram webhook mode so Telegram messages arrive as inbound HTTP requests and can wake the service after sleep.
+Render Free Web Services are useful for demos, but they are not true 24/7 hosting. Render spins down a free web service after 15 minutes without inbound HTTP or WebSocket traffic. On Render, this bot runs in Telegram polling mode and exposes a small health endpoint on the Render web port.
 
 Steps:
 
@@ -90,7 +90,15 @@ Steps:
    - `GROQ_API_KEY`
 6. Deploy.
 
-Render automatically provides `RENDER_EXTERNAL_URL` and `PORT`, which the bot uses to register its Telegram webhook.
+Render automatically provides `PORT`, which the bot uses for its health endpoint.
+
+To reduce sleep-related Telegram delays, create a free uptime monitor that visits your Render service URL every 5 minutes:
+
+```text
+https://your-service-name.onrender.com/
+```
+
+For one free service, a 5-minute monitor usually keeps it within Render's monthly free instance hours, but watch your Render usage page.
 
 Manual Render settings if not using Blueprint:
 
@@ -102,7 +110,7 @@ Start Command: python telegram_bot.py
 Plan: Free
 ```
 
-If a free service has been idle, the first Telegram message after sleep can be delayed while Render wakes the service. If it does not answer, send `/health` again after about a minute.
+If a free service has been idle, the first Telegram message after sleep can be delayed while Render wakes the service. The uptime monitor avoids most of that pain.
 
 ## Environment Variables
 
@@ -122,6 +130,7 @@ Optional:
 - `TELEGRAM_MESSAGE_LIMIT`
 - `REQUEST_TIMEOUT_SECONDS`
 - `LOG_LEVEL`
+- `TELEGRAM_MODE`
 - `WEBHOOK_URL`
 - `WEBHOOK_PATH`
 
