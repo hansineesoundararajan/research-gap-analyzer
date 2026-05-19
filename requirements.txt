@@ -1,6 +1,7 @@
-groq
-python-dotenv
-arxiv
-requests
-pymupdf
+arxiv==2.4.1
+feedparser==6.0.12
+groq==1.1.2
+python-dotenv==1.2.2
+requests==2.32.5
+pymupdf==1.27.2.2
 python-telegram-bot==20.7
