@@ -75,6 +75,31 @@ sudo systemctl restart research-gap-bot.service
 sudo journalctl -u research-gap-bot.service -f
 ```
 
+## Render Free Deployment
+
+Render Free Web Services are useful for demos, but they are not true 24/7 hosting. Render spins down a free web service after 15 minutes without inbound HTTP or WebSocket traffic. This bot includes a small health web server so Render can run it as a Free Web Service while the Telegram polling bot runs in the same process.
+
+Steps:
+
+1. Push this repo to GitHub.
+2. In Render, choose **New > Blueprint**.
+3. Select this repository.
+4. Render will read `render.yaml`.
+5. Add the required environment variables:
+   - `TELEGRAM_TOKEN`
+   - `GROQ_API_KEY`
+6. Deploy.
+
+Manual Render settings if not using Blueprint:
+
+```text
+Service Type: Web Service
+Runtime: Python
+Build Command: pip install -r requirements.txt
+Start Command: python telegram_bot.py
+Plan: Free
+```
+
 ## Environment Variables
 
 Required:

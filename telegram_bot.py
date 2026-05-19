@@ -1,7 +1,9 @@
 import asyncio
 import logging
 import os
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from logging.handlers import RotatingFileHandler
+from threading import Thread
 
 from telegram import Update
 from telegram.constants import ChatAction
@@ -12,6 +14,19 @@ from research_pipeline import ResearchGapPipeline
 
 
 logger = logging.getLogger(__name__)
+
+
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self) -> None:
+        body = b"Research Gap Analyzer Bot is running.\n"
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, format: str, *args) -> None:
+        return
 
 
 def configure_logging() -> None:
@@ -36,6 +51,23 @@ def configure_logging() -> None:
         format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
         handlers=handlers,
     )
+
+
+def start_health_server_if_needed() -> None:
+    port = os.getenv("PORT")
+    if not port:
+        return
+
+    try:
+        port_number = int(port)
+    except ValueError:
+        logger.warning("Invalid PORT value: %s", port)
+        return
+
+    server = ThreadingHTTPServer(("0.0.0.0", port_number), HealthCheckHandler)
+    thread = Thread(target=server.serve_forever, daemon=True, name="health-server")
+    thread.start()
+    logger.info("Health server listening on port %s", port_number)
 
 
 def split_message(text: str, limit: int) -> list[str]:
@@ -138,6 +170,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 def main() -> None:
     configure_logging()
+    start_health_server_if_needed()
     config.settings.validate_for_bot()
 
     app = (

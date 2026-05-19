@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: research-gap-analyzer
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python telegram_bot.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: TELEGRAM_TOKEN
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.1-8b-instant
+      - key: NUM_PAPERS
+        value: "3"
+      - key: LOG_LEVEL
+        value: INFO
