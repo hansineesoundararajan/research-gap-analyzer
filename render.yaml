@@ -16,5 +16,7 @@ services:
         value: llama-3.1-8b-instant
       - key: NUM_PAPERS
         value: "3"
+      - key: WEBHOOK_PATH
+        value: telegram-webhook
       - key: LOG_LEVEL
         value: INFO

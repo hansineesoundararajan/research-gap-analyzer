@@ -70,6 +70,23 @@ def start_health_server_if_needed() -> None:
     logger.info("Health server listening on port %s", port_number)
 
 
+def get_webhook_settings() -> tuple[int, str, str] | None:
+    external_url = os.getenv("WEBHOOK_URL") or os.getenv("RENDER_EXTERNAL_URL")
+    port = os.getenv("PORT")
+    if not external_url or not port:
+        return None
+
+    try:
+        port_number = int(port)
+    except ValueError:
+        logger.warning("Invalid PORT value: %s", port)
+        return None
+
+    url_path = os.getenv("WEBHOOK_PATH", "telegram-webhook").strip("/")
+    webhook_url = f"{external_url.rstrip('/')}/{url_path}"
+    return port_number, url_path, webhook_url
+
+
 def split_message(text: str, limit: int) -> list[str]:
     if len(text) <= limit:
         return [text]
@@ -170,7 +187,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 def main() -> None:
     configure_logging()
-    start_health_server_if_needed()
     config.settings.validate_for_bot()
 
     app = (
@@ -188,7 +204,20 @@ def main() -> None:
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     logger.info("Research Gap Analyzer Bot started")
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
+    webhook_settings = get_webhook_settings()
+    if webhook_settings:
+        port, url_path, webhook_url = webhook_settings
+        logger.info("Running Telegram webhook on %s", webhook_url)
+        app.run_webhook(
+            listen="0.0.0.0",
+            port=port,
+            url_path=url_path,
+            webhook_url=webhook_url,
+            allowed_updates=Update.ALL_TYPES,
+        )
+    else:
+        start_health_server_if_needed()
+        app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == "__main__":
