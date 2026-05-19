@@ -63,10 +63,11 @@ The Telegram report includes:
 The bot is designed to feel simple:
 
 1. Open Telegram.
-2. Send `/start`.
-3. Send a research topic.
-4. Wait while papers are retrieved and analyzed.
-5. Read the generated research gap report.
+2. Search hansi_researchbot
+3. Send `/start`.
+4. Send a research topic.
+5. Wait while papers are retrieved and analyzed.
+6. Read the generated research gap report.
 
 You can also send:
 
@@ -173,52 +174,6 @@ Build Command: pip install -r requirements.txt
 Start Command: python telegram_bot.py
 Plan: Free
 ```
-
-## Oracle Cloud Always Free Deployment
-
-Oracle Cloud Always Free is the better option for true 24/7 hosting.
-
-On an Ubuntu VM:
-
-```bash
-sudo apt-get update
-sudo apt-get install -y git
-git clone YOUR_REPO_URL research-gap-analyzer
-cd research-gap-analyzer
-bash deploy/oracle/setup_oracle_ubuntu.sh
-nano .env
-sudo systemctl start research-gap-bot.service
-sudo systemctl status research-gap-bot.service
-```
-
-Useful service commands:
-
-```bash
-sudo systemctl restart research-gap-bot.service
-sudo journalctl -u research-gap-bot.service -f
-```
-
-## Environment Variables
-
-Required:
-
-- `TELEGRAM_TOKEN`
-- `GROQ_API_KEY`
-
-Optional:
-
-- `GROQ_MODEL`
-- `NUM_PAPERS`
-- `ARXIV_RESULTS_PER_QUERY`
-- `ARXIV_DELAY_SECONDS`
-- `ARXIV_RETRIES`
-- `EXTRACTION_MAX_CHARS`
-- `TELEGRAM_MESSAGE_LIMIT`
-- `REQUEST_TIMEOUT_SECONDS`
-- `LOG_LEVEL`
-- `TELEGRAM_MODE`
-- `WEBHOOK_URL`
-- `WEBHOOK_PATH`
 
 ## Status
 
