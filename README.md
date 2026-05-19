@@ -1,15 +1,86 @@
 # Research Gap Analyzer Bot
 
-An autonomous Telegram bot that takes a research topic, retrieves relevant arXiv papers, extracts structured academic signals with Groq/LLaMA, compares papers, and returns research gaps plus future research directions.
+Research Gap Analyzer Bot is a Telegram-based research assistant that turns a research topic into a structured research gap report. Send a topic, wait for the analysis, and receive a concise comparison of relevant arXiv papers with methods, datasets, limitations, research gaps, and future research directions.
 
-## What It Does
+It is built for students, researchers, and early-stage project builders who need a faster way to understand what has already been explored and where new work can still contribute.
 
-- Generates optimized academic search queries
-- Retrieves relevant papers from arXiv
-- Extracts methodology, datasets, metrics, results, limitations, and gap signals
-- Performs cross-paper comparative analysis
-- Sends a structured research gap report through Telegram
-- Runs as a long-lived service on an Oracle Cloud Always Free VM
+## What You Can Do
+
+- Discover relevant arXiv papers from a plain research topic
+- Understand common methods, datasets, and evaluation patterns
+- Identify limitations repeated across multiple papers
+- Generate research gaps and future work ideas
+- Receive the report directly inside Telegram
+- Use it as a starting point for thesis topics, literature reviews, paper ideation, and project proposals
+
+## How The Bot Works
+
+1. You send a research topic in Telegram.
+2. The bot creates optimized academic search queries.
+3. It retrieves relevant papers from arXiv.
+4. It extracts structured signals from each paper abstract.
+5. It compares the papers across methodology, datasets, metrics, results, and limitations.
+6. It sends back a research gap analysis report.
+
+## Example Prompts
+
+Send messages like these to the bot:
+
+```text
+graph neural networks for drug discovery
+```
+
+```text
+emotion-aware intelligent tutoring systems
+```
+
+```text
+explainable AI in healthcare diagnosis
+```
+
+```text
+transformers for time series forecasting
+```
+
+For best results, use a focused academic topic instead of a very broad phrase like `AI` or `machine learning`.
+
+## What The Report Includes
+
+The Telegram report includes:
+
+- Search queries used
+- Papers reviewed
+- Shared assumptions across papers
+- Methodology patterns
+- Dataset and metric patterns
+- Common limitations
+- Research gaps
+- Future research directions
+- Innovation score
+
+## User Experience
+
+The bot is designed to feel simple:
+
+1. Open Telegram.
+2. Send `/start`.
+3. Send a research topic.
+4. Wait while papers are retrieved and analyzed.
+5. Read the generated research gap report.
+
+You can also send:
+
+```text
+/health
+```
+
+to check whether the bot is online.
+
+## Important Notes For Users
+
+This tool is an AI research assistant, not a replacement for manual literature review. Use its output as a strong starting point, then verify papers, citations, claims, and research gaps yourself before using them in academic work.
+
+The production Telegram flow uses paper abstracts by default instead of full PDF text. This keeps the bot faster and more reliable on free hosting.
 
 ## Tech Stack
 
@@ -21,7 +92,26 @@ An autonomous Telegram bot that takes a research topic, retrieves relevant arXiv
 - python-telegram-bot
 - PyMuPDF for optional PDF extraction
 - python-dotenv
-- systemd for 24/7 Oracle Cloud hosting
+- systemd for Oracle Cloud hosting
+- Render Blueprint support
+
+## Project Structure
+
+```text
+agents/
+  arxiv_agent.py
+  comparison_agent.py
+  extraction_agent.py
+  pdf_agent.py
+  query_agent.py
+config.py
+main.py
+research_pipeline.py
+telegram_bot.py
+render.yaml
+requirements.txt
+deploy/oracle/
+```
 
 ## Local Setup
 
@@ -51,11 +141,44 @@ Run the terminal version:
 python main.py
 ```
 
+## Render Free Deployment
+
+Render is useful for a free demo deployment, but it is not true always-on hosting. Render Free Web Services spin down after inactivity. This bot runs in Telegram polling mode on Render and exposes a small health endpoint so an uptime monitor can keep the service awake.
+
+Steps:
+
+1. Push this repo to GitHub.
+2. In Render, choose **New > Blueprint**.
+3. Select this repository.
+4. Render will read `render.yaml`.
+5. Add the required environment variables:
+   - `TELEGRAM_TOKEN`
+   - `GROQ_API_KEY`
+6. Deploy.
+
+Render automatically provides `PORT`, which the bot uses for its health endpoint.
+
+To reduce sleep-related delays, create a free uptime monitor that visits your Render service URL every 5 minutes:
+
+```text
+https://your-service-name.onrender.com/
+```
+
+Manual Render settings if not using Blueprint:
+
+```text
+Service Type: Web Service
+Runtime: Python
+Build Command: pip install -r requirements.txt
+Start Command: python telegram_bot.py
+Plan: Free
+```
+
 ## Oracle Cloud Always Free Deployment
 
-Recommended deployment target: an Ubuntu VM on Oracle Cloud Always Free.
+Oracle Cloud Always Free is the better option for true 24/7 hosting.
 
-On the VM:
+On an Ubuntu VM:
 
 ```bash
 sudo apt-get update
@@ -74,43 +197,6 @@ Useful service commands:
 sudo systemctl restart research-gap-bot.service
 sudo journalctl -u research-gap-bot.service -f
 ```
-
-## Render Free Deployment
-
-Render Free Web Services are useful for demos, but they are not true 24/7 hosting. Render spins down a free web service after 15 minutes without inbound HTTP or WebSocket traffic. On Render, this bot runs in Telegram polling mode and exposes a small health endpoint on the Render web port.
-
-Steps:
-
-1. Push this repo to GitHub.
-2. In Render, choose **New > Blueprint**.
-3. Select this repository.
-4. Render will read `render.yaml`.
-5. Add the required environment variables:
-   - `TELEGRAM_TOKEN`
-   - `GROQ_API_KEY`
-6. Deploy.
-
-Render automatically provides `PORT`, which the bot uses for its health endpoint.
-
-To reduce sleep-related Telegram delays, create a free uptime monitor that visits your Render service URL every 5 minutes:
-
-```text
-https://your-service-name.onrender.com/
-```
-
-For one free service, a 5-minute monitor usually keeps it within Render's monthly free instance hours, but watch your Render usage page.
-
-Manual Render settings if not using Blueprint:
-
-```text
-Service Type: Web Service
-Runtime: Python
-Build Command: pip install -r requirements.txt
-Start Command: python telegram_bot.py
-Plan: Free
-```
-
-If a free service has been idle, the first Telegram message after sleep can be delayed while Render wakes the service. The uptime monitor avoids most of that pain.
 
 ## Environment Variables
 
@@ -134,6 +220,17 @@ Optional:
 - `WEBHOOK_URL`
 - `WEBHOOK_PATH`
 
-## Notes
+## Status
 
-The production Telegram flow uses abstracts by default instead of downloading full PDFs. This keeps responses fast and reliable on a small free VM. PDF extraction remains available through `PDFAgent` for future expansion.
+The bot is production-shaped for a portfolio/demo project:
+
+- Modular agent pipeline
+- Telegram interface
+- arXiv retrieval
+- LLM-based extraction and comparison
+- Render deployment config
+- Oracle `systemd` deployment config
+- Environment-based secrets
+- Basic logging and error handling
+
+Future improvements could include full-PDF analysis, citation graph exploration, saved report export, a web dashboard, and stronger clustering-based similarity analysis.
